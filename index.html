@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>God's Remnant Assembly — Transportation</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{
+  --cream:#FAF6EF;--parchment:#F2EAD8;--gold:#B8832A;--gold-l:#D4A44C;--gold-bg:#FDF3E0;
+  --brown:#3D2910;--brown-m:#6B4423;--green:#2A5C42;--green-l:#3D7A5A;--green-bg:#EAF4EE;
+  --red:#B03020;--red-bg:#FDECEA;--blue:#1A4A7A;--blue-bg:#E8F0FA;
+  --gray:#7A6E62;--gray-l:#E8E0D4;--white:#fff;
+  --sh:0 2px 16px rgba(61,41,16,.10);--sh-lg:0 8px 40px rgba(61,41,16,.18);
+  --serif:'Lora',serif;--sans:'DM Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--cream);color:var(--brown);min-height:100vh}
+h1,h2,h3{font-family:var(--serif)}
+input,select,textarea,button{font-family:var(--sans)}
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.on{display:flex}
+/* topbar */
+.topbar{background:var(--brown);height:54px;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.t-brand{display:flex;align-items:center;gap:10px}
+.t-logo{width:32px;height:32px;border-radius:50%;background:var(--gold-bg);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--brown)}
+.t-name{font-family:var(--serif);font-size:15px;color:var(--gold-l)}
+.t-role{font-size:11px;color:#8A7060;text-transform:uppercase;letter-spacing:.08em}
+.back-btn{background:transparent;border:1px solid #5A3A1A;color:#9A7A5A;font-size:12px;padding:5px 12px;border-radius:8px;cursor:pointer}
+.back-btn:hover{border-color:var(--gold-l);color:var(--gold-l)}
+/* cards */
+.card{background:var(--white);border-radius:14px;box-shadow:var(--sh);overflow:hidden}
+.form-card{background:var(--white);border-radius:14px;padding:1.5rem;box-shadow:var(--sh);margin-bottom:12px}
+/* fields */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;color:var(--gray);margin-bottom:5px;font-weight:500}
+.field input,.field select,.field textarea{width:100%;padding:10px 13px;border:1.5px solid var(--gray-l);border-radius:10px;font-size:14px;color:var(--brown);background:var(--white);outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold)}
+.field textarea{resize:vertical;min-height:70px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* buttons */
+.btn{padding:8px 16px;border-radius:9px;font-size:13px;cursor:pointer;border:1.5px solid var(--gray-l);background:var(--white);color:var(--brown);transition:all .15s}
+.btn:hover{background:var(--gold-bg);border-color:var(--gold)}
+.btn-gold{background:var(--gold);color:var(--white);border-color:var(--gold)}
+.btn-gold:hover{background:var(--gold-l);border-color:var(--gold-l)}
+.btn-green{background:var(--green);color:var(--white);border-color:var(--green)}
+.btn-green:hover{background:var(--green-l)}
+.btn-red{background:var(--red-bg);color:var(--red);border-color:var(--red)}
+.btn-brown{background:var(--brown);color:var(--gold-l);border:none;font-family:var(--serif);font-size:16px;font-weight:600}
+.btn-brown:hover{background:var(--brown-m)}
+.btn-full{width:100%;padding:13px;border-radius:12px;display:block;text-align:center}
+/* badges */
+.badge{display:inline-block;font-size:11px;padding:2px 9px;border-radius:20px;font-weight:500}
+.badge-pending{background:#FEF3C7;color:#92400E}
+.badge-assigned{background:var(--green-bg);color:var(--green)}
+.badge-completed{background:var(--gray-l);color:var(--gray)}
+/* alert */
+.alert{border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:12px}
+.alert-warn{background:#FEF3C7;color:#92400E;border:1px solid #F59E0B}
+.alert-info{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue)}
+.alert-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green)}
+/* tabs */
+.tabs{display:flex;gap:4px;margin-bottom:1.25rem;background:var(--parchment);padding:4px;border-radius:10px;width:fit-content;flex-wrap:wrap}
+.tab{padding:6px 16px;border-radius:7px;border:none;background:transparent;font-size:13px;color:var(--gray);cursor:pointer}
+.tab.on{background:var(--white);color:var(--brown);font-weight:500;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+/* table */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{padding:8px 14px;text-align:left;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--gray);background:var(--cream);border-bottom:1px solid var(--gray-l)}
+td{padding:10px 14px;border-bottom:.5px solid var(--gray-l);color:var(--brown);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--gold-bg)}
+/* zone tag */
+.zone-tag{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--gold-bg);color:var(--gold)}
+/* map */
+.map-wrap{border-radius:14px;overflow:hidden;box-shadow:var(--sh)}
+/* admin layout */
+.admin-layout{flex:1;display:flex;overflow:hidden}
+.sidebar{width:210px;background:var(--white);border-right:1px solid var(--gray-l);padding:1rem 0;flex-shrink:0;overflow-y:auto}
+.sidebar-section{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);padding:0 1.25rem;margin:1rem 0 6px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 1.25rem;font-size:13px;color:var(--gray);cursor:pointer;border-left:3px solid transparent;transition:all .15s}
+.nav-item:hover{background:var(--cream);color:var(--brown)}
+.nav-item.on{background:var(--gold-bg);color:var(--brown);border-left-color:var(--gold);font-weight:500}
+.nav-icon{width:18px;text-align:center;font-size:15px}
+.admin-content{flex:1;overflow-y:auto;padding:1.75rem}
+.panel{display:none}
+.panel.on{display:block}
+.panel-title{font-size:22px;color:var(--brown);margin-bottom:4px}
+.panel-sub{font-size:13px;color:var(--gray);margin-bottom:1.5rem}
+/* metrics */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+.metric{background:var(--white);border-radius:14px;padding:1.1rem;box-shadow:var(--sh)}
+.metric-val{font-family:var(--serif);font-size:30px;font-weight:600;color:var(--brown);line-height:1;margin:6px 0 4px}
+.metric-lbl{font-size:12px;color:var(--gray)}
+/* driver cards */
+.driver-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:1.25rem}
+.driver-card{background:var(--white);border-radius:14px;padding:1.1rem 1.25rem;box-shadow:var(--sh)}
+.avail-pill{font-size:11px;padding:3px 10px;border-radius:20px;cursor:pointer;font-weight:500;border:none}
+/* ride card */
+.ride-card{background:var(--white);border-radius:14px;padding:1.1rem 1.25rem;margin-bottom:10px;box-shadow:var(--sh);border-left:4px solid var(--gold);display:flex;gap:12px;align-items:flex-start}
+.ride-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0}
+.ride-name{font-weight:500;font-size:15px;color:var(--brown)}
+.ride-detail{font-size:12px;color:var(--gray);margin-top:3px}
+.ride-note{font-size:12px;color:var(--brown-m);margin-top:4px;font-style:italic}
+/* status screen */
+.status-row{display:flex;gap:8px;padding:7px 0;border-bottom:.5px solid var(--gray-l)}
+.status-label{font-size:12px;color:var(--gray);width:130px;flex-shrink:0}
+.status-val{font-size:13px;color:var(--brown);font-weight:500}
+/* section label */
+.sec-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--gray-l)}
+/* success box */
+.success-box{background:var(--green-bg);border:1.5px solid var(--green);border-radius:16px;padding:2rem;text-align:center}
+/* confirm code box */
+.code-box{background:var(--white);border-radius:12px;padding:1rem 1.25rem;border:1px solid var(--green);margin-top:1rem;text-align:center}
+.code-val{font-family:var(--serif);font-size:32px;font-weight:600;color:var(--brown);letter-spacing:.1em}
+/* landing */
+#screen-landing{background:var(--brown);align-items:center;justify-content:center;padding:2rem}
+.landing-card{background:var(--white);border-radius:20px;padding:2.5rem 2rem;max-width:420px;width:100%;box-shadow:var(--sh-lg);text-align:center}
+.church-crest{width:64px;height:64px;border-radius:50%;background:var(--brown);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;font-size:28px;color:var(--gold-l)}
+.entry-btn{display:block;width:100%;padding:1rem 1.25rem;border-radius:12px;border:1.5px solid var(--gray-l);background:var(--white);text-align:left;cursor:pointer;margin-bottom:10px;transition:all .18s}
+.entry-btn:hover{border-color:var(--gold);background:var(--gold-bg)}
+.entry-btn.primary{background:var(--brown);border-color:var(--brown)}
+.entry-btn.primary:hover{background:var(--brown-m)}
+.entry-title{font-family:var(--serif);font-size:15px;font-weight:600;color:var(--brown)}
+.entry-sub{font-size:12px;color:var(--gray);margin-top:2px}
+.primary .entry-title{color:var(--gold-l)}
+.primary .entry-sub{color:#9A8070}
+/* login */
+.login-wrap{display:flex;flex:1;align-items:center;justify-content:center;padding:2rem;flex-direction:column}
+.login-card{background:var(--white);border-radius:20px;padding:2.5rem 2rem;max-width:380px;width:100%;box-shadow:var(--sh-lg)}
+.err-msg{background:var(--red-bg);border:1px solid var(--red);color:var(--red);font-size:13px;padding:8px 12px;border-radius:8px;margin-bottom:12px;display:none}
+/* body scroll area */
+.body-scroll{flex:1;overflow-y:auto;max-width:600px;width:100%;margin:0 auto;padding:1.75rem 1.25rem}
+.body-scroll-wide{flex:1;overflow-y:auto;max-width:560px;width:100%;margin:0 auto;padding:2rem 1.25rem}
+/* legend */
+.legend{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap}
+.legend-dot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:5px}
+@media(max-width:600px){.metrics{grid-template-columns:1fr 1fr}.sidebar{display:none}.field-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ═══ LANDING ═══ -->
+<div id="screen-landing" class="screen on">
+  <div class="landing-card">
+    <div class="church-crest">✝</div>
+    <h1 style="font-size:22px;color:var(--brown);margin-bottom:4px">God's Remnant Assembly</h1>
+    <p style="font-size:13px;color:var(--gray);margin-bottom:2rem">Transportation Ministry Portal</p>
+    <button class="entry-btn primary" onclick="go('screen-member')">
+      <div class="entry-title">🚌 &nbsp;I need a ride</div>
+      <div class="entry-sub">Submit a ride request — no account needed</div>
+    </button>
+    <button class="entry-btn" onclick="go('screen-status')">
+      <div class="entry-title">🔍 &nbsp;Check my ride status</div>
+      <div class="entry-sub">Look up by confirmation code or phone number</div>
+    </button>
+    <button class="entry-btn" onclick="go('screen-driver-login')">
+      <div class="entry-title">🚗 &nbsp;I'm a driver</div>
+      <div class="entry-sub">Log in to see your assigned pickups</div>
+    </button>
+    <button class="entry-btn" onclick="go('screen-admin-login')">
+      <div class="entry-title">⚙️ &nbsp;Coordinator / Admin</div>
+      <div class="entry-sub">Manage requests, drivers, and members</div>
+    </button>
+  </div>
+</div>
+
+<!-- ═══ MEMBER REQUEST ═══ -->
+<div id="screen-member" class="screen">
+  <div class="topbar">
+    <div class="t-brand"><div class="t-logo">✝</div><div><div class="t-name">God's Remnant Assembly</div><div class="t-role">Ride Request</div></div></div>
+    <button class="back-btn" onclick="go('screen-landing')">← Back</button>
+  </div>
+  <div class="body-scroll-wide">
+    <div id="member-form">
+      <h2 style="font-size:22px;margin-bottom:4px">Request a Ride</h2>
+      <p style="font-size:13px;color:var(--gray);margin-bottom:1.25rem">Fill out the form below. Our team will confirm within 24 hours.</p>
+      <div class="form-card">
+        <div class="sec-label">Your Information</div>
+        <div class="field"><label>Full Name *</label><input id="m-name" placeholder="e.g. Patricia Williams"/></div>
+        <div class="field-row">
+          <div class="field"><label>Phone Number *</label><input id="m-phone" placeholder="555-0000"/></div>
+          <div class="field"><label>Passengers</label><select id="m-pax"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6+</option></select></div>
+        </div>
+      </div>
+      <div class="form-card">
+        <div class="sec-label">Trip Details</div>
+        <div class="field"><label>Type of Trip *</label><select id="m-type"><option>Sunday Morning Service</option><option>Sunday Evening Service</option><option>Youth Program</option><option>Special Event / Trip</option><option>Other</option></select></div>
+        <div class="field-row">
+          <div class="field"><label>Date Needed *</label><input id="m-date" type="date"/></div>
+          <div class="field"><label>Zone / Area</label><select id="m-zone"><option>North</option><option>South</option><option>East</option><option>West</option><option>Central</option><option>Not sure</option></select></div>
+        </div>
+      </div>
+      <div class="form-card">
+        <div class="sec-label">Pickup Location</div>
+        <div class="field"><label>Street Address *</label><input id="m-addr" placeholder="123 Main Street"/></div>
+        <div class="field-row">
+          <div class="field"><label>City</label><input id="m-city" value="Columbia"/></div>
+          <div class="field"><label>ZIP</label><input id="m-zip" placeholder="21044"/></div>
+        </div>
+        <div class="field"><label>Special Notes <span style="font-weight:400;color:var(--gray)">(optional)</span></label><textarea id="m-notes" placeholder="Wheelchair access, children, etc."></textarea></div>
+      </div>
+      <button class="btn btn-brown btn-full" onclick="submitRequest()">Submit Ride Request →</button>
+    </div>
+    <div id="member-success" style="display:none">
+      <div class="success-box">
+        <div style="font-size:40px;margin-bottom:12px">🙏</div>
+        <h2 style="font-family:var(--serif);font-size:20px;color:var(--green);margin-bottom:8px">Request Received!</h2>
+        <p style="font-size:14px;color:var(--green-l);line-height:1.6">The transportation team will confirm your ride within 24 hours. God bless you!</p>
+        <div class="code-box">
+          <div style="font-size:12px;color:var(--green);font-weight:500;margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em">Your Confirmation Code</div>
+          <div class="code-val" id="success-code"></div>
+          <div style="font-size:12px;color:var(--gray);margin-top:6px">Save this code to check your ride status anytime.</div>
+        </div>
+      </div>
+      <button class="btn btn-full" style="margin-top:12px" onclick="resetMember()">Submit another request</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STATUS LOOKUP ═══ -->
+<div id="screen-status" class="screen">
+  <div class="topbar">
+    <div class="t-brand"><div class="t-logo">✝</div><div><div class="t-name">God's Remnant Assembly</div><div class="t-role">Ride Status</div></div></div>
+    <button class="back-btn" onclick="go('screen-landing')">← Back</button>
+  </div>
+  <div class="body-scroll-wide">
+    <h2 style="font-size:22px;margin-bottom:4px">Check Your Ride Status</h2>
+    <p style="font-size:13px;color:var(--gray);margin-bottom:1.5rem">Enter your confirmation code (e.g. GRA-4821) or the phone number you used when submitting.</p>
+    <div class="form-card">
+      <div style="display:flex;gap:10px">
+        <input id="status-q" placeholder="GRA-4821  or  555-0000" style="flex:1;padding:11px 14px;border:1.5px solid var(--gray-l);border-radius:10px;font-size:15px;outline:none" onkeydown="if(event.key==='Enter')lookupStatus()"/>
+        <button class="btn btn-brown" style="padding:11px 20px;border-radius:10px;font-family:var(--serif);font-size:14px" onclick="lookupStatus()">Look up →</button>
+      </div>
+    </div>
+    <div id="status-results"></div>
+  </div>
+</div>
+
+<!-- ═══ DRIVER LOGIN ═══ -->
+<div id="screen-driver-login" class="screen">
+  <div class="login-wrap">
+    <button onclick="go('screen-landing')" style="background:transparent;border:none;color:var(--gray);font-size:13px;cursor:pointer;margin-bottom:1rem">← Back to home</button>
+    <div class="login-card">
+      <div style="font-size:32px;text-align:center;margin-bottom:1rem">🚗</div>
+      <h2 style="font-size:20px;margin-bottom:4px">Driver Login</h2>
+      <p style="font-size:13px;color:var(--gray);margin-bottom:1.5rem">Enter your name and phone exactly as the coordinator has on file.</p>
+      <div id="driver-err" class="err-msg">Name or phone not found. Check with your coordinator.</div>
+      <div class="field"><label>Full Name</label><input id="dl-name" placeholder="e.g. Deacon James"/></div>
+      <div class="field"><label>Phone Number</label><input id="dl-phone" placeholder="555-0101"/></div>
+      <p style="font-size:11px;color:var(--gray);margin-bottom:10px">Demo: Deacon James / 555-0101</p>
+      <button class="btn btn-green btn-full" onclick="driverLogin()">Sign In →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DRIVER DASHBOARD ═══ -->
+<div id="screen-driver" class="screen">
+  <div class="topbar">
+    <div class="t-brand"><div class="t-logo">🚗</div><div><div class="t-name" id="d-topname">Driver</div><div class="t-role">Driver Portal</div></div></div>
+    <button class="back-btn" onclick="driverLogout()">Sign Out</button>
+  </div>
+  <div class="body-scroll">
+    <h2 id="d-welcome" style="font-size:20px;margin-bottom:2px"></h2>
+    <p id="d-sub" style="font-size:13px;color:var(--gray);margin-bottom:1.25rem"></p>
+    <div id="d-zone-alert"></div>
+    <div class="tabs">
+      <button class="tab on" onclick="dTab('mine',this)">My Rides</button>
+      <button class="tab" onclick="dTab('open',this)">Open Pool <span id="pool-badge" style="background:var(--red);color:#fff;border-radius:20px;padding:1px 7px;font-size:11px;margin-left:4px;display:none"></span></button>
+      <button class="tab" onclick="dTab('team',this)">Team Schedule</button>
+      <button class="tab" onclick="dTab('map',this)">Route Map</button>
+    </div>
+    <!-- MY RIDES -->
+    <div id="dp-mine">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem">
+        <div style="background:var(--white);border-radius:12px;padding:1rem;box-shadow:var(--sh);text-align:center"><div class="code-val" id="ds-rides" style="font-size:28px">0</div><div style="font-size:11px;color:var(--gray)">My rides</div></div>
+        <div style="background:var(--white);border-radius:12px;padding:1rem;box-shadow:var(--sh);text-align:center"><div class="code-val" id="ds-seats" style="font-size:28px">0</div><div style="font-size:11px;color:var(--gray)">Seats used</div></div>
+        <div style="background:var(--white);border-radius:12px;padding:1rem;box-shadow:var(--sh);text-align:center"><div class="code-val" id="ds-done" style="font-size:28px">0</div><div style="font-size:11px;color:var(--gray)">Completed</div></div>
+      </div>
+      <div id="d-rides-list"></div>
+      <div class="card" style="padding:1.1rem 1.25rem;margin-top:10px">
+        <h3 style="font-size:15px;margin-bottom:6px">Can't drive this week?</h3>
+        <p style="font-size:13px;color:var(--gray);margin-bottom:10px">Your rides return to the open pool so another driver can claim them.</p>
+        <button class="btn btn-red" onclick="goUnavail()">Mark myself as unavailable</button>
+      </div>
+    </div>
+    <!-- OPEN POOL -->
+    <div id="dp-open" style="display:none">
+      <div class="alert alert-info">These rides have no driver yet. Claim any that fit your zone and capacity.</div>
+      <div id="d-pool-list"></div>
+    </div>
+    <!-- TEAM SCHEDULE -->
+    <div id="dp-team" style="display:none">
+      <div class="alert alert-info">See all drivers' schedules. Contact a driver directly to coordinate a swap.</div>
+      <div id="d-team-list"></div>
+    </div>
+    <!-- MAP -->
+    <div id="dp-map" style="display:none">
+      <div class="map-wrap"><div id="map-driver" style="height:300px"></div></div>
+      <div class="legend" style="margin-top:8px">
+        <span><span class="legend-dot" style="background:var(--green)"></span>Church</span>
+        <span><span class="legend-dot" style="background:var(--gold)"></span>Your pickups</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADMIN LOGIN ═══ -->
+<div id="screen-admin-login" class="screen" style="background:var(--brown)">
+  <div class="login-wrap">
+    <button onclick="go('screen-landing')" style="background:transparent;border:none;color:#7A6050;font-size:13px;cursor:pointer;margin-bottom:1rem">← Back to home</button>
+    <div class="login-card" style="background:#2A1A08;border:1px solid #5A3A1A">
+      <div style="font-size:32px;text-align:center;margin-bottom:1rem">⚙️</div>
+      <h2 style="font-size:20px;margin-bottom:4px;color:var(--gold-l)">Coordinator Login</h2>
+      <p style="font-size:13px;color:#7A6050;margin-bottom:1.5rem">Admin access only.</p>
+      <div id="admin-err" class="err-msg">Incorrect email or password.</div>
+      <div class="field"><label style="color:#8A7060">Email</label><input id="al-email" value="caleb@gra.org" style="background:#1A0E04;border-color:#5A3A1A;color:var(--parchment)"/></div>
+      <div class="field"><label style="color:#8A7060">Password</label><input id="al-pass" type="password" value="GRA2025!" style="background:#1A0E04;border-color:#5A3A1A;color:var(--parchment)"/></div>
+      <p style="font-size:11px;color:#7A6050;margin-bottom:10px">e.g. <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1774767b72755770657639786570">[email&#160;protected]</a> / GRA2025!</p>
+      <button class="btn btn-gold btn-full" onclick="adminLogin()">Sign In →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADMIN DASHBOARD ═══ -->
+<div id="screen-admin" class="screen">
+  <div class="topbar">
+    <div class="t-brand"><div class="t-logo">✝</div><div><div class="t-name">God's Remnant Assembly</div><div class="t-role">Coordinator Portal</div></div></div>
+    <div style="display:flex;align-items:center;gap:10px"><span id="admin-name-label" style="font-size:12px;color:#8A7060"></span><button class="back-btn" onclick="adminLogout()">Sign Out</button></div>
+  </div>
+  <div class="admin-layout">
+    <div class="sidebar">
+      <div class="sidebar-section">Overview</div>
+      <div class="nav-item on" id="nav-dashboard" onclick="showPanel('dashboard')"><span class="nav-icon">📊</span>Dashboard</div>
+      <div class="sidebar-section">Manage</div>
+      <div class="nav-item" id="nav-requests" onclick="showPanel('requests')"><span class="nav-icon">📋</span>Ride Requests</div>
+      <div class="nav-item" id="nav-drivers" onclick="showPanel('drivers')"><span class="nav-icon">🚗</span>Drivers</div>
+      <div class="nav-item" id="nav-members" onclick="showPanel('members')"><span class="nav-icon">👥</span>Members</div>
+      <div class="sidebar-section">Maps</div>
+      <div class="nav-item" id="nav-map-pickup" onclick="showPanel('map-pickup')"><span class="nav-icon">📍</span>Pickup Map</div>
+      <div class="nav-item" id="nav-map-members" onclick="showPanel('map-members')"><span class="nav-icon">🗺️</span>Member Map</div>
+      <div class="sidebar-section">Activity</div>
+      <div class="nav-item" id="nav-activity" onclick="showPanel('activity')"><span class="nav-icon">🔔</span>Driver Activity</div>
+    </div>
+    <div class="admin-content">
+      <!-- DASHBOARD -->
+      <div class="panel on" id="panel-dashboard">
+        <h1 class="panel-title">Dashboard</h1>
+        <p class="panel-sub" id="dash-date"></p>
+        <div class="metrics">
+          <div class="metric"><div style="font-size:20px">⏳</div><div class="metric-val" id="m-pending" style="color:var(--red)">0</div><div class="metric-lbl">Pending</div></div>
+          <div class="metric"><div style="font-size:20px">✅</div><div class="metric-val" id="m-assigned" style="color:var(--green)">0</div><div class="metric-lbl">Assigned</div></div>
+          <div class="metric"><div style="font-size:20px">🚗</div><div class="metric-val" id="m-drivers">0</div><div class="metric-lbl">Drivers available</div></div>
+          <div class="metric"><div style="font-size:20px">💺</div><div class="metric-val" id="m-seats">0</div><div class="metric-lbl">Open seats</div></div>
+        </div>
+        <div id="dash-alerts"></div>
+        <div class="card">
+          <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--gray-l);display:flex;justify-content:space-between;align-items:center">
+            <span style="font-family:var(--serif);font-size:16px">Needs Driver Assignment</span>
+            <button class="btn" style="font-size:12px;padding:5px 12px" onclick="showPanel('requests')">View all →</button>
+          </div>
+          <div id="dash-pending-table"></div>
+        </div>
+      </div>
+      <!-- REQUESTS -->
+      <div class="panel" id="panel-requests">
+        <h1 class="panel-title">All Ride Requests</h1>
+        <p class="panel-sub">Manage, filter, and assign all requests.</p>
+        <div class="tabs">
+          <button class="tab on" onclick="filterReqs('all',this)">All</button>
+          <button class="tab" onclick="filterReqs('pending',this)">Pending</button>
+          <button class="tab" onclick="filterReqs('assigned',this)">Assigned</button>
+          <button class="tab" onclick="filterReqs('completed',this)">Completed</button>
+        </div>
+        <div class="card" style="overflow:auto"><div id="req-table"></div></div>
+      </div>
+      <!-- DRIVERS -->
+      <div class="panel" id="panel-drivers">
+        <h1 class="panel-title">Driver Roster</h1>
+        <p class="panel-sub">Manage volunteer drivers and availability.</p>
+        <div class="card" style="padding:1.25rem;margin-bottom:1.25rem">
+          <div style="font-family:var(--serif);font-size:16px;margin-bottom:1rem">Add New Driver</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+            <div class="field" style="margin:0"><label>Full Name</label><input id="nd-name" placeholder="Deacon Smith"/></div>
+            <div class="field" style="margin:0"><label>Phone</label><input id="nd-phone" placeholder="555-0000"/></div>
+            <div class="field" style="margin:0"><label>Seats</label><select id="nd-seats"><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></div>
+          </div>
+          <div style="margin-bottom:10px"><label style="font-size:12px;color:var(--gray);display:block;margin-bottom:5px">Zones</label>
+            <div style="display:flex;gap:12px;flex-wrap:wrap" id="nd-zones">
+              <label style="font-size:13px;cursor:pointer"><input type="checkbox" value="North"> North</label>
+              <label style="font-size:13px;cursor:pointer"><input type="checkbox" value="South"> South</label>
+              <label style="font-size:13px;cursor:pointer"><input type="checkbox" value="East"> East</label>
+              <label style="font-size:13px;cursor:pointer"><input type="checkbox" value="West"> West</label>
+              <label style="font-size:13px;cursor:pointer"><input type="checkbox" value="Central"> Central</label>
+            </div>
+          </div>
+          <button class="btn btn-gold" onclick="addDriver()">Add Driver</button>
+        </div>
+        <div class="driver-grid" id="drivers-grid"></div>
+      </div>
+      <!-- MEMBERS -->
+      <div class="panel" id="panel-members">
+        <h1 class="panel-title">Member Directory</h1>
+        <p class="panel-sub">All members who use the transportation ministry.</p>
+        <div class="card" style="padding:1.25rem;margin-bottom:1.25rem">
+          <div style="font-family:var(--serif);font-size:16px;margin-bottom:1rem">Add Member</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;align-items:end">
+            <div class="field" style="margin:0"><label>Name</label><input id="nm-name" placeholder="Mother Agnes"/></div>
+            <div class="field" style="margin:0"><label>Phone</label><input id="nm-phone" placeholder="555-0000"/></div>
+            <div class="field" style="margin:0"><label>Address</label><input id="nm-addr" placeholder="42 Oak Lane, Columbia"/></div>
+            <div class="field" style="margin:0"><label>Zone</label><select id="nm-zone"><option>North</option><option>South</option><option>East</option><option>West</option><option>Central</option></select></div>
+          </div>
+          <button class="btn btn-gold" style="margin-top:10px" onclick="addMember()">Add Member</button>
+        </div>
+        <div class="card" style="overflow:auto"><table><thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>Zone</th><th>Rides</th></tr></thead><tbody id="members-tbody"></tbody></table></div>
+      </div>
+      <!-- MAP PICKUP -->
+      <div class="panel" id="panel-map-pickup">
+        <h1 class="panel-title">Pickup Map</h1>
+        <p class="panel-sub">Red = needs a driver · Green = covered</p>
+        <div id="dash-alerts-map" style="margin-bottom:12px"></div>
+        <div class="map-wrap"><div id="map-pickup" style="height:420px"></div></div>
+        <div class="legend"><span><span class="legend-dot" style="background:var(--red)"></span>Unassigned</span><span><span class="legend-dot" style="background:var(--green)"></span>Assigned</span><span><span class="legend-dot" style="background:var(--gold)"></span>Church</span></div>
+      </div>
+      <!-- MAP MEMBERS -->
+      <div class="panel" id="panel-map-members">
+        <h1 class="panel-title">Member Map</h1>
+        <p class="panel-sub">Where your members live — use this to plan zones and recruit drivers.</p>
+        <div class="map-wrap"><div id="map-members" style="height:420px"></div></div>
+        <div class="legend"><span><span class="legend-dot" style="background:#185fa5"></span>North</span><span><span class="legend-dot" style="background:#2A5C42"></span>East</span><span><span class="legend-dot" style="background:#B8832A"></span>West</span><span><span class="legend-dot" style="background:#993556"></span>South</span><span><span class="legend-dot" style="background:#555"></span>Central</span></div>
+      </div>
+      <!-- ACTIVITY -->
+      <div class="panel" id="panel-activity">
+        <h1 class="panel-title">Driver Activity Log</h1>
+        <p class="panel-sub">Claims, declines, and availability changes — logged automatically.</p>
+        <div class="card" style="padding:1rem 1.25rem" id="activity-log"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SUPABASE CONFIG ───────────────────────────────────────────────
+const SB_URL="https://liqweffklrklzsyhbtgg.supabase.co";
+const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpcXdlZmZrbHJrbHpzeWhidGdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2NzQzOTUsImV4cCI6MjA5MDI1MDM5NX0.dxHCwGcSQSc6KaYOuLemgwIVh4GEP2ZEnegZ0wrX5qw";
+
+async function sbFetch(path,opts={}){
+  const res=await fetch(SB_URL+"/rest/v1/"+path,{
+    headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json","Prefer":"return=representation",...(opts.headers||{})},
+    ...opts
+  });
+  if(!res.ok){const t=await res.text();console.error("SB error",res.status,t);return null;}
+  const ct=res.headers.get("content-type")||"";
+  return ct.includes("json")?res.json():[];
+}
+async function sbGet(table,query=""){return await sbFetch(table+"?"+query+"&order=created_at.asc")||[];}
+async function sbInsert(table,row){return await sbFetch(table,{method:"POST",body:JSON.stringify(row)});}
+async function sbUpdate(table,id,patch){return await sbFetch(table+"?id=eq."+id,{method:"PATCH",body:JSON.stringify(patch)});}
+async function sbDelete(table,id){return await sbFetch(table+"?id=eq."+id,{method:"DELETE"});}
+
+// ── ADMINS (local only — never stored in DB) ──────────────────────
+const ADMINS=[
+  {email:"caleb@gra.org",   password:"GRA2025!",name:"Caleb"},
+  {email:"loretta@gra.org", password:"GRA2025!",name:"Loretta"},
+  {email:"jamari@gra.org",  password:"GRA2025!",name:"Jamari"},
+  {email:"osagie@gra.org",  password:"GRA2025!",name:"Osagie"},
+  {email:"darren@gra.org",  password:"GRA2025!",name:"Darren"},
+  {email:"laura@gra.org",   password:"GRA2025!",name:"Laura"},
+];
+
+// ── IN-MEMORY DB (loaded from Supabase on start) ──────────────────
+let DB={requests:[],drivers:[],members:[],notifs:[]};
+let currentDriver=null,currentAdmin=null,currentReqFilter="all";
+let driverMap=null,pickupMap=null,memberMap=null;
+
+// map snake_case from Supabase to camelCase used in app
+function mapReq(r){return{id:r.id,name:r.name,phone:r.phone,type:r.type,date:r.date,zone:r.zone,address:r.address,passengers:r.passengers,notes:r.notes||"",status:r.status,driverId:r.driver_id,confirmCode:r.confirm_code,pickupTime:r.pickup_time||"",coordNote:r.coord_note||""};}
+function mapDriver(d){return{id:d.id,name:d.name,phone:d.phone,seats:d.seats,available:d.available,zones:d.zones||[]};}
+function mapMember(m){return{id:m.id,name:m.name,phone:m.phone,address:m.address,zone:m.zone,rides:m.rides||0};}
+function mapNotif(n){return{id:n.id,msg:n.msg,type:n.type,ts:new Date(n.created_at).getTime()};}
+
+async function loadAll(){
+  showLoading(true);
+  try{
+    const [reqs,drvs,membs,nots]=await Promise.all([
+      sbGet("requests"),sbGet("drivers"),sbGet("members"),sbGet("notifs","order=created_at.desc&limit=50")
+    ]);
+    DB.requests=(reqs||[]).map(mapReq);
+    DB.drivers=(drvs||[]).map(mapDriver);
+    DB.members=(membs||[]).map(mapMember);
+    DB.notifs=(nots||[]).map(mapNotif);
+  }catch(e){console.error("loadAll failed",e);}
+  showLoading(false);
+}
+
+function showLoading(on){
+  let el=document.getElementById("loading-overlay");
+  if(!el){
+    el=document.createElement("div");
+    el.id="loading-overlay";
+    el.style.cssText="position:fixed;inset:0;background:rgba(61,41,16,0.85);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:12px;backdrop-filter:blur(2px)";
+    el.innerHTML=`<div style="background:#2A1A08;padding:2rem 2.5rem;border-radius:16px;text-align:center;border:1px solid #5A3A1A"><div style="font-size:32px;color:var(--gold-l);margin-bottom:8px">✝</div><div style="font-family:var(--serif);font-size:16px;color:var(--gold-l)">Loading…</div></div>`;
+    document.body.appendChild(el);
+  }
+  el.style.display=on?"flex":"none";
+}
+
+// seed initial drivers/members if DB is empty
+async function seedIfEmpty(){
+  if(DB.drivers.length===0){
+    const seeds=[
+      {id:"d1",name:"Deacon James",phone:"555-0101",seats:5,available:true,zones:["North","East"]},
+      {id:"d2",name:"Sister Ruth", phone:"555-0102",seats:4,available:true, zones:["South","West"]},
+      {id:"d3",name:"Brother Paul",phone:"555-0103",seats:6,available:false,zones:["East","Central"]},
+    ];
+    for(const d of seeds) await sbInsert("drivers",d);
+    DB.drivers=seeds;
+  }
+  if(DB.members.length===0){
+    const seeds=[
+      {id:"mb1",name:"Mother Agnes",    phone:"555-0111",address:"42 Oak Lane, Columbia, MD",   zone:"North",rides:18},
+      {id:"mb2",name:"Elder Thomas",    phone:"555-0122",address:"7 Birch Rd, Columbia, MD",    zone:"East", rides:24},
+      {id:"mb3",name:"Patricia Williams",phone:"555-0199",address:"91 Cedar Blvd, Columbia, MD",zone:"West", rides:9},
+      {id:"mb4",name:"Johnson Family",  phone:"555-0133",address:"18 Maple Ave, Columbia, MD",  zone:"South",rides:6},
+    ];
+    for(const m of seeds) await sbInsert("members",m);
+    DB.members=seeds;
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded",async()=>{
+  document.getElementById("m-date").valueAsDate=new Date();
+  await loadAll();
+  await seedIfEmpty();
+});
+
+// ── NAVIGATION ────────────────────────────────────────────────────
+function go(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on"));
+  document.getElementById(id).classList.add("on");
+  if(id==="screen-admin"){ loadAll().then(()=>refreshAdmin()); }
+  if(id==="screen-driver"){ loadAll().then(()=>refreshDriver()); }
+  if(id==="screen-status"){ document.getElementById("status-results").innerHTML=""; document.getElementById("status-q").value=""; }
+}
+
+// ── MEMBER REQUEST ────────────────────────────────────────────────
+async function submitRequest(){
+  const name=document.getElementById("m-name").value.trim();
+  const phone=document.getElementById("m-phone").value.trim();
+  const addr=document.getElementById("m-addr").value.trim();
+  if(!name||!phone||!addr){alert("Please fill in all required fields (*).");return;}
+  const code="GRA-"+Math.floor(1000+Math.random()*9000);
+  const row={id:"r"+Date.now(),name,phone,
+    passengers:document.getElementById("m-pax").value,
+    type:document.getElementById("m-type").value,
+    date:document.getElementById("m-date").value,
+    zone:document.getElementById("m-zone").value,
+    address:addr+", "+document.getElementById("m-city").value+", MD "+document.getElementById("m-zip").value,
+    notes:document.getElementById("m-notes").value.trim(),
+    status:"pending",driver_id:null,confirm_code:code,pickup_time:"",coord_note:""
+  };
+  await sbInsert("requests",row);
+  DB.requests.push(mapReq(row));
+  document.getElementById("success-code").textContent=code;
+  document.getElementById("member-form").style.display="none";
+  document.getElementById("member-success").style.display="block";
+}
+function resetMember(){
+  ["m-name","m-phone","m-addr","m-zip","m-notes"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("m-city").value="Columbia";
+  document.getElementById("m-date").valueAsDate=new Date();
+  document.getElementById("member-form").style.display="block";
+  document.getElementById("member-success").style.display="none";
+}
+
+// ── STATUS LOOKUP ─────────────────────────────────────────────────
+function lookupStatus(){
+  const q=document.getElementById("status-q").value.trim();
+  if(!q){alert("Please enter a code or phone number.");return;}
+  const qn=q.replace(/\D/g,"");
+  const found=DB.requests.filter(r=>
+    (r.confirmCode&&r.confirmCode.toLowerCase()===q.toLowerCase())||
+    r.phone.replace(/\D/g,"")===qn
+  );
+  const el=document.getElementById("status-results");
+  if(!found.length){
+    el.innerHTML=`<div class="card" style="padding:2rem;text-align:center"><div style="font-size:32px;margin-bottom:10px">🔍</div><div style="font-family:var(--serif);font-size:16px;margin-bottom:6px">No requests found</div><div style="font-size:13px;color:var(--gray)">Double-check your code or phone number.</div></div>`;
+    return;
+  }
+  const sc={pending:{icon:"⏳",label:"Pending Review",color:"var(--gold)",bg:"var(--gold-bg)",msg:"Your request is in the queue. The team will confirm within 24 hours."},assigned:{icon:"✅",label:"Ride Confirmed",color:"var(--green)",bg:"var(--green-bg)",msg:"Great news! Your ride has been confirmed."},completed:{icon:"🙏",label:"Ride Completed",color:"var(--gray)",bg:"var(--gray-l)",msg:"This ride has been completed. Thank you!"}};
+  el.innerHTML=found.map(r=>{
+    const s=sc[r.status]||sc.pending;
+    const drv=DB.drivers.find(d=>d.id===r.driverId);
+    const driverBlock=drv&&r.status==="assigned"?`
+      <div style="background:var(--green-bg);border-radius:12px;padding:1rem;margin-top:12px;border:1px solid rgba(42,92,66,.15)">
+        <div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--green);margin-bottom:10px">Your Driver</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <div style="width:42px;height:42px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;flex-shrink:0">${drv.name.split(" ").map(w=>w[0]).join("").slice(0,2)}</div>
+          <div><div style="font-family:var(--serif);font-size:16px;font-weight:600;color:var(--brown)">${drv.name}</div><div style="font-size:13px;color:var(--green);margin-top:2px">📞 ${drv.phone}</div></div>
+        </div>
+        ${r.pickupTime?`<div class="status-row"><span class="status-label">Pickup time</span><span class="status-val" style="color:var(--green);font-weight:600">${r.pickupTime}</span></div>`:""}
+        ${r.coordNote?`<div style="margin-top:8px;padding:8px 10px;background:#fff;border-radius:8px;font-size:13px;color:var(--brown-m);font-style:italic">📝 "${r.coordNote}"</div>`:""}
+      </div>`:
+      r.status==="pending"?`<div style="margin-top:12px;padding:10px 12px;background:var(--gold-bg);border-radius:10px;font-size:12px;color:var(--brown-m)">💬 If you submitted on Friday, you'll typically hear back by Saturday morning.</div>`:"";
+    return`<div class="card" style="margin-bottom:14px">
+      <div style="background:${s.bg};padding:1rem 1.25rem;border-bottom:1px solid rgba(0,0,0,.05);display:flex;align-items:center;gap:10px">
+        <span style="font-size:24px">${s.icon}</span>
+        <div><div style="font-family:var(--serif);font-size:16px;font-weight:600;color:${s.color}">${s.label}</div><div style="font-size:12px;color:${s.color};opacity:.85;margin-top:2px">${s.msg}</div></div>
+      </div>
+      <div style="padding:1rem 1.25rem">
+        <div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--gray);margin-bottom:10px">Trip Details</div>
+        ${[["Member",r.name],["Type",r.type],["Date",r.date],["Pickup Address",r.address],["Passengers",r.passengers],["Confirmation",r.confirmCode||"—"]].map(([l,v])=>`<div class="status-row"><span class="status-label">${l}</span><span class="status-val">${v||"—"}</span></div>`).join("")}
+        ${driverBlock}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ── DRIVER LOGIN ──────────────────────────────────────────────────
+function driverLogin(){
+  const name=document.getElementById("dl-name").value.trim().toLowerCase();
+  const phone=document.getElementById("dl-phone").value.trim().replace(/\D/g,"");
+  const d=DB.drivers.find(x=>x.name.toLowerCase()===name&&x.phone.replace(/\D/g,"")===phone);
+  const err=document.getElementById("driver-err");
+  if(!d){err.style.display="block";return;}
+  err.style.display="none";
+  currentDriver=d;
+  go("screen-driver");
+}
+function driverLogout(){currentDriver=null;go("screen-landing");}
+
+// ── DRIVER TABS ───────────────────────────────────────────────────
+function dTab(tab,btn){
+  document.querySelectorAll(".tabs .tab").forEach(t=>t.classList.remove("on"));
+  btn.classList.add("on");
+  ["mine","open","team","map"].forEach(t=>document.getElementById("dp-"+t).style.display=t===tab?"block":"none");
+  if(tab==="map") renderDriverMap();
+}
+
+function refreshDriver(){
+  if(!currentDriver)return;
+  document.getElementById("d-topname").textContent=currentDriver.name;
+  document.getElementById("d-welcome").textContent="Welcome, "+currentDriver.name+" 🙏";
+  document.getElementById("d-sub").textContent=currentDriver.zones.join(", ")+" zone(s) · "+currentDriver.seats+" seats";
+  const myRides=DB.requests.filter(r=>r.driverId===currentDriver.id&&r.status==="assigned");
+  const done=DB.requests.filter(r=>r.driverId===currentDriver.id&&r.status==="completed").length;
+  const seats=myRides.reduce((a,r)=>a+parseInt(r.passengers||1),0);
+  document.getElementById("ds-rides").textContent=myRides.length;
+  document.getElementById("ds-seats").textContent=seats+"/"+currentDriver.seats;
+  document.getElementById("ds-done").textContent=done;
+  const open=DB.requests.filter(r=>r.status==="pending");
+  const badge=document.getElementById("pool-badge");
+  if(open.length){badge.style.display="inline";badge.textContent=open.length;}else{badge.style.display="none";}
+  const myZoneOpen=open.filter(r=>currentDriver.zones.includes(r.zone)||currentDriver.zones.includes("Any"));
+  const alertEl=document.getElementById("d-zone-alert");
+  alertEl.innerHTML=myZoneOpen.length?`<div class="alert alert-warn" style="cursor:pointer" onclick="document.querySelectorAll('.tabs .tab')[1].click()">⚠️ <b>${myZoneOpen.length} ride(s) in your zone</b> still need a driver. <u>View open pool →</u></div>`:"";
+  renderMyRides(myRides);
+  renderOpenPool(open);
+  renderTeamSchedule();
+}
+
+const COLORS=["#B8832A","#2A5C42","#1A4A7A","#993556","#3D2910","#6B4423"];
+function initials(name){return name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();}
+
+function renderMyRides(rides){
+  const el=document.getElementById("d-rides-list");
+  if(!rides.length){el.innerHTML=`<div style="text-align:center;padding:2rem;color:var(--gray)"><div style="font-size:32px;margin-bottom:8px">🙌</div><div style="font-size:14px">No rides assigned yet.</div><div style="font-size:12px;margin-top:4px">Check the <b>Open Pool</b> tab to claim rides in your zone.</div></div>`;return;}
+  el.innerHTML=rides.map((r,i)=>`
+    <div class="ride-card" style="border-left-color:var(--green)">
+      <div class="ride-num" style="background:var(--green-bg);color:var(--green)">${i+1}</div>
+      <div style="flex:1">
+        <div class="ride-name">${r.name}</div>
+        <div class="ride-detail">📅 ${r.date} · 🚌 ${r.type}</div>
+        <div class="ride-detail">📍 ${r.address}</div>
+        <div class="ride-detail">👥 ${r.passengers} passenger(s) · 🗺 ${r.zone} zone</div>
+        ${r.notes?`<div class="ride-note">"${r.notes}"</div>`:""}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+        <button class="btn btn-green" style="font-size:12px;padding:5px 12px" onclick="markDone('${r.id}')">✓ Done</button>
+        <button class="btn btn-red" style="font-size:12px;padding:5px 12px" onclick="declineRide('${r.id}')">✗ Decline</button>
+      </div>
+    </div>`).join("");
+}
+
+function renderOpenPool(pool){
+  const el=document.getElementById("d-pool-list");
+  if(!pool.length){el.innerHTML=`<div style="text-align:center;padding:2rem;color:var(--gray);font-size:14px">🎉 All rides have been claimed!</div>`;return;}
+  const seatsUsed=DB.requests.filter(r=>r.driverId===currentDriver.id&&r.status==="assigned").reduce((a,r)=>a+parseInt(r.passengers||1),0);
+  el.innerHTML=pool.map(r=>{
+    const inZone=currentDriver.zones.includes(r.zone)||currentDriver.zones.includes("Any");
+    const canFit=parseInt(r.passengers||1)<=(currentDriver.seats-seatsUsed);
+    return`<div class="ride-card" style="border-left-color:${inZone?"var(--gold)":"var(--gray-l)"}">
+      <div class="ride-num" style="background:var(--gold-bg);color:var(--gold)">?</div>
+      <div style="flex:1">
+        <div class="ride-name">${r.name} ${inZone?`<span style="font-size:11px;background:var(--gold-bg);color:var(--gold);padding:1px 7px;border-radius:20px;margin-left:4px">Your zone</span>`:""}</div>
+        <div class="ride-detail">📅 ${r.date} · 🚌 ${r.type}</div>
+        <div class="ride-detail">📍 ${r.address}</div>
+        <div class="ride-detail">👥 ${r.passengers} passenger(s) · 🗺 ${r.zone} zone</div>
+        ${r.notes?`<div class="ride-note">"${r.notes}"</div>`:""}
+        ${!canFit?`<div style="font-size:11px;color:var(--red);margin-top:4px">⚠ Not enough seats remaining</div>`:""}
+      </div>
+      <button class="btn btn-green" style="font-size:12px;padding:5px 12px;flex-shrink:0${!canFit?";opacity:.5;cursor:not-allowed":""}" onclick="${canFit?`claimRide('${r.id}')`:""}" ${!canFit?"disabled":""}>Claim</button>
+    </div>`;
+  }).join("");
+}
+
+function renderTeamSchedule(){
+  const el=document.getElementById("d-team-list");
+  el.innerHTML=DB.drivers.map((d,i)=>{
+    const rides=DB.requests.filter(r=>r.driverId===d.id&&r.status!=="completed");
+    const isMe=d.id===currentDriver.id;
+    const c=COLORS[i%COLORS.length];
+    return`<div class="card" style="margin-bottom:12px;${isMe?"border:2px solid var(--gold)":""}">
+      <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--gray-l);display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;border-radius:50%;background:${c}22;color:${c};display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px">${initials(d.name)}</div>
+        <div style="flex:1"><div style="font-family:var(--serif);font-size:14px;font-weight:600">${d.name}${isMe?` <span style="font-size:11px;color:var(--gold)">(you)</span>`:""}</div><div style="font-size:11px;color:var(--gray)">${d.seats} seats · ${d.zones.join(", ")} · <span style="color:${d.available?"var(--green)":"var(--red)"}">${d.available?"Available":"Unavailable"}</span></div></div>
+        <span style="font-size:12px;color:var(--gray)">${rides.length} ride(s)</span>
+      </div>
+      ${rides.length?`<table><thead><tr><th>Member</th><th>Date</th><th>Type</th><th>Zone</th></tr></thead><tbody>${rides.map(r=>`<tr><td>${r.name}</td><td>${r.date}</td><td style="font-size:12px">${r.type}</td><td><span class="zone-tag">${r.zone}</span></td></tr>`).join("")}</tbody></table>`:`<div style="padding:12px 14px;font-size:13px;color:var(--gray)">No rides assigned.</div>`}
+    </div>`;
+  }).join("");
+}
+
+const CHURCH=[39.2037,-76.8610];
+const OFFSETS={North:[0.025,.005],South:[-.025,.005],East:[.005,.03],West:[.005,-.03],Central:[0,0],"Not sure":[.01,.01]};
+const ZONE_COLORS={North:"#185fa5",South:"#993556",East:"#2A5C42",West:"#B8832A",Central:"#555","Not sure":"#888"};
+
+function makeIcon(color,label){
+  return L.divIcon({className:"",html:`<div style="width:30px;height:30px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;border:2px solid rgba(255,255,255,.85);box-shadow:0 2px 6px rgba(0,0,0,.3)">${label}</div>`,iconSize:[30,30],iconAnchor:[15,15],popupAnchor:[0,-18]});
+}
+function jitter(){return (Math.random()-.5)*.008;}
+
+function renderDriverMap(){
+  if(driverMap){driverMap.remove();driverMap=null;}
+  driverMap=L.map("map-driver").setView(CHURCH,12);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(driverMap);
+  L.marker(CHURCH,{icon:makeIcon("#2A5C42","✝")}).addTo(driverMap).bindPopup("<b>God's Remnant Assembly</b>");
+  DB.requests.filter(r=>r.driverId===currentDriver.id&&r.status==="assigned").forEach((r,i)=>{
+    const o=OFFSETS[r.zone]||[0,0];
+    L.marker([CHURCH[0]+o[0]+jitter(),CHURCH[1]+o[1]+jitter()],{icon:makeIcon("#B8832A",i+1)}).addTo(driverMap).bindPopup(`<b>${r.name}</b><br>${r.address}<br>📅 ${r.date}`);
+  });
+}
+
+async function claimRide(id){
+  await sbUpdate("requests",id,{driver_id:currentDriver.id,status:"assigned"});
+  const r=DB.requests.find(x=>x.id===id); if(r){r.driverId=currentDriver.id;r.status="assigned";}
+  await sbInsert("notifs",{msg:`${currentDriver.name} claimed a ride for ${r?.name}.`,type:"claim"});
+  DB.notifs.unshift({ts:Date.now(),msg:`${currentDriver.name} claimed a ride for ${r?.name}.`,type:"claim"});
+  refreshDriver();
+  document.querySelectorAll(".tabs .tab")[0].click();
+}
+async function declineRide(id){
+  if(!confirm("Return this ride to the open pool?"))return;
+  const r=DB.requests.find(x=>x.id===id); const nm=r?.name;
+  await sbUpdate("requests",id,{driver_id:null,status:"pending"});
+  if(r){r.driverId=null;r.status="pending";}
+  await sbInsert("notifs",{msg:`${currentDriver.name} declined the ride for ${nm}. Needs a new driver.`,type:"decline"});
+  DB.notifs.unshift({ts:Date.now(),msg:`${currentDriver.name} declined the ride for ${nm}. Needs a new driver.`,type:"decline"});
+  refreshDriver();
+}
+async function markDone(id){
+  await sbUpdate("requests",id,{status:"completed"});
+  const r=DB.requests.find(x=>x.id===id); if(r)r.status="completed";
+  refreshDriver();
+}
+async function goUnavail(){
+  if(!confirm("This will return all your rides to the open pool and mark you unavailable. Continue?"))return;
+  const mine=DB.requests.filter(r=>r.driverId===currentDriver.id&&r.status==="assigned");
+  for(const r of mine){await sbUpdate("requests",r.id,{driver_id:null,status:"pending"});r.driverId=null;r.status="pending";}
+  await sbUpdate("drivers",currentDriver.id,{available:false});
+  const d=DB.drivers.find(x=>x.id===currentDriver.id); if(d)d.available=false;
+  await sbInsert("notifs",{msg:`${currentDriver.name} is unavailable. Rides returned to open pool.`,type:"unavail"});
+  DB.notifs.unshift({ts:Date.now(),msg:`${currentDriver.name} is unavailable. Rides returned to open pool.`,type:"unavail"});
+  alert("You've been marked unavailable. Your rides are back in the open pool. Thank you!");
+  refreshDriver();
+}
+
+// ── ADMIN ─────────────────────────────────────────────────────────
+function adminLogin(){
+  const email=document.getElementById("al-email").value.trim().toLowerCase();
+  const pass=document.getElementById("al-pass").value;
+  const a=ADMINS.find(x=>x.email.toLowerCase()===email&&x.password===pass);
+  const err=document.getElementById("admin-err");
+  if(!a){err.style.display="block";return;}
+  err.style.display="none"; currentAdmin=a;
+  document.getElementById("admin-name-label").textContent=a.name;
+  go("screen-admin");
+}
+function adminLogout(){currentAdmin=null;go("screen-landing");}
+
+function showPanel(id){
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("on"));
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("on"));
+  document.getElementById("panel-"+id).classList.add("on");
+  const nav=document.getElementById("nav-"+id); if(nav)nav.classList.add("on");
+  if(id==="map-pickup")setTimeout(renderPickupMap,100);
+  if(id==="map-members")setTimeout(renderMemberMap,100);
+}
+
+function refreshAdmin(){
+  const pending=DB.requests.filter(r=>r.status==="pending");
+  const assigned=DB.requests.filter(r=>r.status==="assigned").length;
+  const avail=DB.drivers.filter(d=>d.available);
+  const seats=avail.reduce((a,d)=>{const u=DB.requests.filter(r=>r.driverId===d.id&&r.status==="assigned").reduce((s,r)=>s+parseInt(r.passengers||1),0);return a+Math.max(0,d.seats-u);},0);
+  document.getElementById("m-pending").textContent=pending.length;
+  document.getElementById("m-assigned").textContent=assigned;
+  document.getElementById("m-drivers").textContent=avail.length;
+  document.getElementById("m-seats").textContent=seats;
+  document.getElementById("dash-date").textContent=new Date().toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  const alerts=[];
+  if(pending.length)alerts.push(`<div class="alert alert-warn">⚠️ <b>${pending.length} request(s)</b> waiting for a driver. <span style="text-decoration:underline;cursor:pointer" onclick="showPanel('requests')">Assign now →</span></div>`);
+  ["dash-alerts","dash-alerts-map"].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML=alerts.join("");});
+  renderDashPending(pending);
+  renderReqTable();
+  renderDriversGrid();
+  renderMembersTable();
+  renderActivityLog();
+}
+
+function assignSelect(rid){
+  const avail=DB.drivers.filter(d=>d.available);
+  const r=DB.requests.find(x=>x.id===rid);
+  return`<select onchange="assignDriver('${rid}',this.value)" style="font-size:12px;padding:5px 8px;border:1px solid var(--gray-l);border-radius:7px;width:100%">
+    <option value="">Assign driver…</option>
+    ${avail.map(d=>`<option value="${d.id}" ${r&&r.driverId===d.id?"selected":""}>${d.name} (${d.seats} seats)</option>`).join("")}
+  </select>`;
+}
+
+function renderDashPending(pending){
+  const el=document.getElementById("dash-pending-table");
+  if(!pending.length){el.innerHTML=`<div style="padding:1rem 1.25rem;font-size:13px;color:var(--gray)">All requests have drivers assigned 🎉</div>`;return;}
+  el.innerHTML=`<table><thead><tr><th>Member</th><th>Type</th><th>Date</th><th>Zone</th><th>Assign Driver</th></tr></thead><tbody>${pending.map(r=>`<tr><td><b>${r.name}</b><br><span style="font-size:11px;color:var(--gray)">${r.phone}</span></td><td style="font-size:12px">${r.type}</td><td>${r.date}</td><td><span class="zone-tag">${r.zone}</span></td><td>${assignSelect(r.id)}</td></tr>`).join("")}</tbody></table>`;
+}
+
+function filterReqs(f,btn){
+  currentReqFilter=f;
+  document.querySelectorAll("#panel-requests .tab").forEach(t=>t.classList.remove("on"));
+  btn.classList.add("on");
+  renderReqTable();
+}
+
+function renderReqTable(){
+  let rows=DB.requests;
+  if(currentReqFilter!=="all")rows=rows.filter(r=>r.status===currentReqFilter);
+  const el=document.getElementById("req-table");
+  if(!rows.length){el.innerHTML=`<div style="padding:1rem 1.25rem;font-size:13px;color:var(--gray)">No requests found.</div>`;return;}
+  el.innerHTML=`<table><thead><tr><th>Member</th><th>Type</th><th>Date</th><th>Zone</th><th>Pax</th><th>Status</th><th>Driver / Assign</th><th></th></tr></thead><tbody>${rows.map(r=>{
+    const d=DB.drivers.find(x=>x.id===r.driverId);
+    const bc={pending:"badge-pending",assigned:"badge-assigned",completed:"badge-completed"}[r.status]||"badge-pending";
+    const driverCell=d?`<div><span style="font-size:13px;color:var(--green);display:block;margin-bottom:4px">${d.name}</span>
+      <input placeholder="Pickup time" value="${r.pickupTime||""}" onblur="updateReq('${r.id}','pickupTime',this.value)" style="font-size:11px;padding:4px 8px;border:1px solid var(--gray-l);border-radius:6px;width:100%;margin-bottom:4px"/>
+      <input placeholder="Note to member" value="${r.coordNote||""}" onblur="updateReq('${r.id}','coordNote',this.value)" style="font-size:11px;padding:4px 8px;border:1px solid var(--gray-l);border-radius:6px;width:100%"/>
+    </div>`:assignSelect(r.id);
+    return`<tr><td><b>${r.name}</b><br><span style="font-size:11px;color:var(--gray)">${r.phone}</span>${r.notes?`<br><span style="font-size:11px;color:var(--brown-m);font-style:italic">${r.notes}</span>`:""}</td><td style="font-size:12px">${r.type}</td><td>${r.date}</td><td><span class="zone-tag">${r.zone}</span></td><td style="text-align:center">${r.passengers}</td><td><span class="badge ${bc}">${r.status}</span></td><td>${driverCell}</td><td><button class="btn" style="font-size:11px;padding:4px 10px;color:var(--red);border-color:var(--red)" onclick="removeReq('${r.id}')">Remove</button></td></tr>`;
+  }).join("")}</tbody></table>`;
+}
+
+async function assignDriver(rid,did){
+  await sbUpdate("requests",rid,{driver_id:did||null,status:did?"assigned":"pending"});
+  const r=DB.requests.find(x=>x.id===rid); if(r){r.driverId=did||null;r.status=did?"assigned":"pending";}
+  refreshAdmin();
+}
+async function updateReq(rid,field,val){
+  const dbField=field==="pickupTime"?"pickup_time":"coord_note";
+  await sbUpdate("requests",rid,{[dbField]:val});
+  const r=DB.requests.find(x=>x.id===rid); if(r)r[field]=val;
+}
+async function removeReq(id){
+  if(!confirm("Remove this request?"))return;
+  await sbDelete("requests",id);
+  DB.requests=DB.requests.filter(r=>r.id!==id); refreshAdmin();
+}
+
+function renderDriversGrid(){
+  const el=document.getElementById("drivers-grid");
+  el.innerHTML=DB.drivers.map((d,i)=>{
+    const c=COLORS[i%COLORS.length];
+    const myRides=DB.requests.filter(r=>r.driverId===d.id&&r.status==="assigned").length;
+    return`<div class="driver-card" style="border:1.5px solid ${d.available?"var(--gray-l)":"var(--red-bg)"}">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:40px;height:40px;border-radius:50%;background:${c}22;color:${c};display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px">${initials(d.name)}</div>
+        <div style="flex:1"><div style="font-weight:500;font-size:14px">${d.name}</div><div style="font-size:12px;color:var(--gray)">📞 ${d.phone} · ${d.seats} seats</div></div>
+        <button class="avail-pill" style="background:${d.available?"var(--green-bg)":"var(--red-bg)"};color:${d.available?"var(--green)":"var(--red)"}" onclick="toggleDriver('${d.id}')">${d.available?"Available":"Unavail."}</button>
+      </div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap">${d.zones.map(z=>`<span class="zone-tag">${z}</span>`).join("")}</div>
+      ${myRides?`<div style="margin-top:8px;font-size:12px;color:var(--green)">${myRides} ride(s) assigned</div>`:""}
+    </div>`;
+  }).join("");
+}
+async function toggleDriver(id){
+  const d=DB.drivers.find(x=>x.id===id); if(!d)return;
+  d.available=!d.available;
+  await sbUpdate("drivers",id,{available:d.available}); refreshAdmin();
+}
+async function addDriver(){
+  const name=document.getElementById("nd-name").value.trim();
+  const phone=document.getElementById("nd-phone").value.trim();
+  const seats=parseInt(document.getElementById("nd-seats").value);
+  if(!name||!phone){alert("Name and phone required.");return;}
+  const zones=[...document.querySelectorAll("#nd-zones input:checked")].map(cb=>cb.value);
+  const row={id:"d"+Date.now(),name,phone,seats,available:true,zones:zones.length?zones:["Any"]};
+  await sbInsert("drivers",row); DB.drivers.push(row);
+  document.getElementById("nd-name").value=""; document.getElementById("nd-phone").value="";
+  document.querySelectorAll("#nd-zones input").forEach(cb=>cb.checked=false);
+  refreshAdmin();
+}
+
+function renderMembersTable(){
+  document.getElementById("members-tbody").innerHTML=DB.members.map(m=>`<tr><td><b>${m.name}</b></td><td>${m.phone}</td><td style="font-size:12px;color:var(--gray)">${m.address}</td><td><span class="zone-tag">${m.zone}</span></td><td>${m.rides||0}</td></tr>`).join("");
+}
+async function addMember(){
+  const name=document.getElementById("nm-name").value.trim();
+  const phone=document.getElementById("nm-phone").value.trim();
+  if(!name||!phone){alert("Name and phone required.");return;}
+  const row={id:"mb"+Date.now(),name,phone,address:document.getElementById("nm-addr").value.trim(),zone:document.getElementById("nm-zone").value,rides:0};
+  await sbInsert("members",row); DB.members.push(row);
+  document.getElementById("nm-name").value=""; document.getElementById("nm-phone").value=""; document.getElementById("nm-addr").value="";
+  refreshAdmin();
+}
+
+function renderActivityLog(){
+  const el=document.getElementById("activity-log");
+  if(!DB.notifs.length){el.innerHTML=`<p style="font-size:13px;color:var(--gray);padding:1rem 0">No driver activity yet.</p>`;return;}
+  const icons={claim:"✅",decline:"⚠️",unavail:"🔴"};
+  el.innerHTML=[...DB.notifs].reverse().map(n=>{
+    const d=new Date(n.ts);
+    const t=d.toLocaleDateString("en-US",{month:"short",day:"numeric"})+" · "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
+    return`<div style="display:flex;gap:12px;padding:12px 0;border-bottom:.5px solid var(--gray-l);align-items:flex-start"><span style="font-size:18px">${icons[n.type]||"📌"}</span><div style="flex:1"><div style="font-size:13px">${n.msg}</div><div style="font-size:11px;color:var(--gray);margin-top:3px">${t}</div></div></div>`;
+  }).join("");
+}
+
+function renderPickupMap(){
+  if(pickupMap){pickupMap.remove();pickupMap=null;}
+  pickupMap=L.map("map-pickup").setView(CHURCH,12);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(pickupMap);
+  L.marker(CHURCH,{icon:makeIcon("#B8832A","✝")}).addTo(pickupMap).bindPopup("<b>God's Remnant Assembly</b>");
+  DB.requests.filter(r=>r.status!=="completed").forEach(r=>{
+    const o=OFFSETS[r.zone]||[0,0];
+    const d=DB.drivers.find(x=>x.id===r.driverId);
+    L.marker([CHURCH[0]+o[0]+jitter(),CHURCH[1]+o[1]+jitter()],{icon:makeIcon(r.status==="assigned"?"#2A5C42":"#B03020",r.status==="assigned"?"✓":"!")}).addTo(pickupMap).bindPopup(`<b>${r.name}</b><br>${r.type}<br>📅 ${r.date}<br>Driver: ${d?d.name:"<span style='color:red'>None</span>"}`);
+  });
+}
+function renderMemberMap(){
+  if(memberMap){memberMap.remove();memberMap=null;}
+  memberMap=L.map("map-members").setView(CHURCH,12);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(memberMap);
+  L.marker(CHURCH,{icon:makeIcon("#B8832A","✝")}).addTo(memberMap).bindPopup("<b>God's Remnant Assembly</b>");
+  DB.members.forEach(m=>{
+    const o=OFFSETS[m.zone]||[0,0];
+    L.marker([CHURCH[0]+o[0]+jitter(),CHURCH[1]+o[1]+jitt
