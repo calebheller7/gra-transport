@@ -1,0 +1,5 @@
+[build]
+  publish = "."
+
+[template.environment]
+  EMAIL_OBFUSCATION = "off"
