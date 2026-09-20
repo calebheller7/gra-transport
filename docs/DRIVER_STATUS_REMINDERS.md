@@ -25,4 +25,4 @@ Toggle **Remind me to update trip status** off on Driver Profile (or an admin ca
 - Workflow: `Driver Status Reminders` (`*/20 6-22 * * *` America/New_York)
 - UI: `StatusUpdateReminder` on DriverDashboard + DrivingToday; toggle on DriverProfile + AccountEditPanel
 
-Checkpoint deployed: `6ab02f6cfcbebd62dafe0bf1`
+Checkpoint: `6ab02f6cfcbebd62dafe0bf1` (status reminders). Production redeployed 2026-09-20 to https://bridge-gra.base44.app — Jane can use it after a refresh / re-open of the app.
