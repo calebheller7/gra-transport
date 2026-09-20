@@ -1,0 +1,45 @@
+{
+  "name": "Driver Status Reminders",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "driver_status_reminders",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "remind_drivers": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "remindDriverStatusUpdates",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Nudge drivers to update trip status",
+            "description": "Push drivers who opted into status reminders (and web push) when claimed/on_the_way/picked_up rides still need a tap. Quiet hours 11pm\u20136am ET; 40 min throttle per driver."
+          }
+        }
+      }
+    ]
+  },
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "*/20 6-22 * * *",
+      "one_time_date": null,
+      "timezone": "America/New_York",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "Every 20 minutes from 6am\u201310:59pm ET, push drivers with notify_status_reminders + web push when their claimed rides still need On the way / Got them / At church."
+}

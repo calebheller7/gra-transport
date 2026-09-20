@@ -1,0 +1,363 @@
+{
+  "name": "User",
+  "type": "object",
+  "required": [
+    "role"
+  ],
+  "properties": {
+    "role": {
+      "type": "string",
+      "description": "The role of the user in the app",
+      "enum": [
+        "admin",
+        "driver",
+        "rider"
+      ],
+      "default": "rider",
+      "rls": {
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
+    },
+    "phone": {
+      "type": "string"
+    },
+    "assigned_zone": {
+      "type": "string"
+    },
+    "zones": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "vehicle_capacity": {
+      "type": "number",
+      "default": 4
+    },
+    "vehicle_description": {
+      "type": "string",
+      "description": "Display label like 'Silver Honda Accord'"
+    },
+    "vehicle_make": {
+      "type": "string",
+      "description": "Vehicle make (required for drivers)"
+    },
+    "vehicle_model": {
+      "type": "string",
+      "description": "Vehicle model (required for drivers)"
+    },
+    "vehicle_color": {
+      "type": "string",
+      "description": "Vehicle color"
+    },
+    "is_active_driver": {
+      "type": "boolean",
+      "default": false
+    },
+    "driver_approved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set false on new driver signups until an admin approves them. Existing drivers (field never set) are treated as approved \u2014 only an explicit false blocks driving actions."
+    },
+    "notify_new_rides": {
+      "type": "boolean",
+      "default": false,
+      "description": "Drivers: email when a new ride is requested in your zone(s). Off by default \u2014 push preferred; unset treated as false."
+    },
+    "notify_admin_new_rides": {
+      "type": "boolean",
+      "default": false,
+      "description": "Admins only: opt in to per-request new-ride emails (off by default to prevent spam)"
+    },
+    "notify_stuck_rides": {
+      "type": "boolean",
+      "default": false,
+      "description": "Opt in to stuck-ride digest emails (off by default \u2014 never blast all admins)"
+    },
+    "notify_admin_digest": {
+      "type": "boolean",
+      "default": false,
+      "description": "Opt in to on-demand emailed digests from Zone Reports (scheduled digests disabled; stats stay in-app)"
+    },
+    "notify_return_queue": {
+      "type": "boolean",
+      "default": false,
+      "description": "Drivers: email when a return ride is needed in your zone(s). Off by default \u2014 push preferred; unset treated as false."
+    },
+    "notify_web_push": {
+      "type": "boolean",
+      "default": false,
+      "description": "Opt-in browser/web push ride alerts"
+    },
+    "notify_status_reminders": {
+      "type": "boolean",
+      "default": true,
+      "description": "Drivers: push nudge to tap On the way / Got them / At church when a claimed ride still needs a status update. Default on; requires web push. Set false to silence."
+    },
+    "status_reminder_sent_at": {
+      "type": "string",
+      "description": "ISO timestamp of last trip-status reminder push (throttle)"
+    },
+    "push_subscription": {
+      "type": "string",
+      "description": "JSON PushSubscription for web push"
+    },
+    "today_mode": {
+      "type": "string",
+      "enum": [
+        "driving",
+        "riding"
+      ],
+      "default": "driving",
+      "description": "Driving or need a ride today without changing role"
+    },
+    "baptism_name": {
+      "type": "string",
+      "description": "Optional baptism / spiritual name. Legal/full name remains primary for dispatch and pickup."
+    },
+    "legal_name": {
+      "type": "string",
+      "description": "Editable real first+last name. Base44 built-in full_name is read-only (often email username from OAuth); use legal_name for display and dispatch."
+    },
+    "zone_filter_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, Available Rides only shows rides in home_zone + willing_zones"
+    },
+    "home_zone": {
+      "type": "string",
+      "description": "Driver preference: primary zone for claimable ride filtering (separate from admin assigned_zone)"
+    },
+    "willing_zones": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Additional zones driver will claim rides from when zone_filter_enabled"
+    },
+    "mileage_filter_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, only show claimable rides within mileage_radius_miles of pickup origin"
+    },
+    "mileage_radius_miles": {
+      "type": "number",
+      "default": 10,
+      "description": "Max distance in miles when mileage_filter_enabled (default 10)"
+    },
+    "pickup_origin_mode": {
+      "type": "string",
+      "enum": [
+        "home_address",
+        "manual",
+        "zone_centroid"
+      ],
+      "default": "zone_centroid",
+      "description": "How driver pickup origin is resolved for mileage filter"
+    },
+    "pickup_origin_address": {
+      "type": "string",
+      "description": "Home/staging address geocoded for mileage filter origin"
+    },
+    "pickup_origin_lat": {
+      "type": "number",
+      "description": "Driver pickup origin latitude (geocoded home or manual)"
+    },
+    "pickup_origin_lng": {
+      "type": "number",
+      "description": "Driver pickup origin longitude (geocoded home or manual)"
+    },
+    "account_disabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, account stays but cannot request rides or use the app. Admin-only toggle.",
+      "rls": {
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
+    },
+    "account_disabled_reason": {
+      "type": "string",
+      "description": "Private admin note for why the account was paused (never shown to the user).",
+      "rls": {
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
+    },
+    "account_disabled_at": {
+      "type": "string",
+      "description": "ISO timestamp when the account was paused",
+      "rls": {
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
+    },
+    "account_disabled_by": {
+      "type": "string",
+      "description": "Admin user id who paused the account",
+      "rls": {
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
+    },
+    "sunday_rides_only": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, rider may only request rides for Sunday services (morning/global/evening). Blocks midweek, revival, conference, and other special events.",
+      "rls": {
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
+    },
+    "mega_exploits_only": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, driver Available Rides board only shows Mega Exploits rides (Oct 15\u201318, 2026 events whose title contains mega exploit). Excludes Oct 18 Sunday 1st/2nd/3rd services. Admin-only toggle.",
+      "rls": {
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
+    },
+    "platform_roles": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "platform_founder",
+          "platform_super_admin"
+        ]
+      },
+      "description": "Cross-church platform roles for Founder Impact. Distinct from church admin. Owner email also grants founder access.",
+      "rls": {
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
+    },
+    "platform_founder": {
+      "type": "boolean",
+      "default": false,
+      "description": "Explicit founder flag for Founder Impact dashboard (owner email also qualifies).",
+      "rls": {
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
+    },
+    "legacy_id": {
+      "type": "string",
+      "description": "Stable Bridge migration id. Backfill copies Base44 id (or gow_[entity]_[id]). Never overwrite once set."
+    },
+    "source_system": {
+      "type": "string",
+      "default": "base44_gospel_on_wheels",
+      "description": "Origin system for Bridge migration"
+    },
+    "source_entity": {
+      "type": "string",
+      "description": "Canonical entity name in source system e.g. RideRequest",
+      "default": "Attendance"
+    },
+    "migration_status": {
+      "type": "string",
+      "enum": [
+        "not_ready",
+        "ready",
+        "needs_review",
+        "excluded",
+        "exported",
+        "migrated",
+        "migration_failed"
+      ],
+      "default": "not_ready",
+      "description": "Bridge migration readiness. Default not_ready. Never auto-set to migrated."
+    },
+    "migration_batch_id": {
+      "type": "string",
+      "description": "Optional export/migration batch identifier"
+    },
+    "migrated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When record was marked migrated in Bridge (leave empty until real migration)"
+    },
+    "migration_notes": {
+      "type": "string",
+      "description": "Operator notes for Bridge migration review"
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Soft-archive timestamp (additive; does not hide records from ops)"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "Soft-archive flag for Bridge prep (does not delete)"
+    },
+    "migration_issue_type": {
+      "type": "string",
+      "description": "Data-quality issue key e.g. missing_email, orphan_fk, unknown_status"
+    },
+    "migration_issue_details": {
+      "type": "string",
+      "description": "Human-readable data-quality details for Bridge review"
+    },
+    "requires_manual_review": {
+      "type": "boolean",
+      "default": false,
+      "description": "Flag for manual Bridge review \u2014 never auto-merge or delete"
+    },
+    "person_legacy_id": {
+      "type": "string",
+      "description": "Stable person identity across systems (usually mirrors User/Rider legacy_id)"
+    },
+    "auth_user_legacy_id": {
+      "type": "string",
+      "description": "Linked auth User legacy_id when known"
+    },
+    "normalized_email": {
+      "type": "string",
+      "description": "Lowercase trimmed email for duplicate matching (keep display email separate)"
+    },
+    "normalized_phone": {
+      "type": "string",
+      "description": "Digits-only phone for compare (keep display phone separate)"
+    },
+    "potential_duplicate": {
+      "type": "boolean",
+      "default": false,
+      "description": "Possible duplicate person \u2014 flag only, never auto-merge"
+    },
+    "duplicate_review_notes": {
+      "type": "string",
+      "description": "Notes for manual duplicate review"
+    }
+  }
+}
